@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#091c34">
+  <title>Mandatín · Ordenar oraciones</title>
+  <link rel="stylesheet" href="./oraciones.css">
+  <link rel="stylesheet" href="./oraciones-arcade.css">
+  <link rel="stylesheet" href="./oraciones-game.css">
+  <link rel="stylesheet" href="./oraciones-illustrated.css?v=excel1">
+  <link rel="stylesheet" href="./rewa-oraciones.css?v=rewa1">
+</head>
+<body>
+  <details id="rewaDock">
+    <summary><span id="rewaLabel">Control REWA</span><button id="rewaConnect" type="button">Conectar REWA</button><button id="rewaCenter" type="button" hidden>Centrar</button></summary>
+    <div class="rewa-options">
+      <p id="rewaStatus" role="status"></p>
+      <label><input id="rewaInvert" type="checkbox">Invertir izquierda / derecha</label>
+      <label><input id="rewaInvertY" type="checkbox">Invertir arriba / abajo</label>
+      <p>Inclina para mover. Toca REWA para tomar una palabra y vuelve a tocar sobre un espacio para soltarla. Apunta a Comprobar y toca para continuar.</p>
+      <button id="rewaDisconnect" type="button" hidden>Desconectar</button>
+    </div>
+  </details>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="back-link" href="./game.html">← Misión espacial</a>
+      <div class="brand"><img src="./mandatin-saluda.png" alt="Mandatín saluda desde su nave"><span>MANDATÍN <em>· Ordenar oraciones</em></span></div>
+      <span id="trackingStatus" class="tracking-status">Cámara apagada</span>
+    </header>
+
+    <main>
+      <section id="setupView" class="setup-view">
+        <div class="hero art-stage title-stage" aria-labelledby="titleHeading">
+          <h1 id="titleHeading" class="sr-only">Mandatín Oraciones · Academia espacial</h1>
+          <p class="sr-only">Apunta a la palabra, cierra el puño para tomarla y abre la mano para soltarla.</p>
+          <button id="menuPlayBtn" class="art-button" type="button">Jugar</button>
+          <button id="menuBankBtn" class="art-button" type="button">Mis oraciones</button>
+          <button id="menuSettingsBtn" class="art-button" type="button">Ajustes</button>
+          <dialog id="settingsDialog" class="editor-card" aria-labelledby="settingsTitle">
+            <h2 id="settingsTitle">Ajustes</h2>
+            <button id="menuFullBtn" class="primary-btn" type="button">Pantalla completa ⛶</button>
+            <form method="dialog"><button class="secondary-btn">Volver</button></form>
+            <a class="back-link" href="./game.html">Ir a Mandatín en órbita</a>
+            <p id="settingsMessage" role="status"></p>
+          </dialog>
+        </div>
+
+        <section class="editor-card" aria-labelledby="bankTitle">
+          <button id="menuBackBtn" class="secondary-btn compact" type="button">← VOLVER AL INICIO</button>
+          <div class="editor-heading"><div><span class="eyebrow">PARA DOCENTES</span><h2 id="bankTitle">Banco de oraciones</h2></div><span id="bankCount" class="count-pill"></span></div>
+          <section class="sentence-files" aria-labelledby="sentenceFilesTitle">
+            <h3 id="sentenceFilesTitle">Prepara tu clase en Excel</h3>
+            <p>Una oración por fila, escrita en el orden correcto. Puedes agregar una pregunta o contexto.</p>
+            <div class="sentence-file-actions">
+              <a class="secondary-btn" href="./plantilla-oraciones.xlsx" download="Plantilla-oraciones-Mandatin.xlsx">Descargar plantilla Excel</a>
+              <button id="importSentencesBtn" class="primary-btn" type="button">Cargar Excel</button>
+            </div>
+            <input id="sentenceFileInput" type="file" accept=".xlsx,.csv" hidden>
+            <small>Excel .xlsx o CSV UTF-8 · Hasta 300 oraciones · 3 a 12 palabras por oración. Se lee la hoja «Oraciones» o, si no existe, la primera hoja.</small>
+            <p id="sentenceFileMessage" role="status" aria-live="polite"></p>
+            <div id="sentenceImportPreview" hidden>
+              <strong id="sentenceImportSummary"></strong>
+              <p>Elige cómo guardar el archivo en este navegador:</p>
+              <div class="sentence-file-actions">
+                <button id="appendSentencesBtn" class="primary-btn" type="button">Agregar al banco</button>
+                <button id="replaceSentencesBtn" class="secondary-btn" type="button">Reemplazar banco</button>
+                <button id="cancelSentenceImportBtn" class="secondary-btn" type="button">Cancelar</button>
+              </div>
+            </div>
+          </section>
+          <form id="sentenceForm" class="add-form">
+            <label for="sentenceInput">Escribe una oración nueva</label>
+            <input id="sentenceInput" maxlength="180" placeholder="Ej.: El gato duerme bajo la mesa." autocomplete="off" required>
+            <label class="context-label" for="contextInput">Pregunta o contexto para el estudiante (opcional)</label>
+            <textarea id="contextInput" maxlength="300" rows="3" placeholder="Ej.: ¿Qué hace el gato bajo la mesa?"></textarea>
+            <button class="add-button" type="submit">Agregar oración</button>
+            <small>Entre 3 y 12 palabras. Se guarda solo en este navegador.</small>
+          </form>
+          <p id="editorMessage" class="form-message" role="status"></p>
+          <div id="sentenceList" class="sentence-list" role="radiogroup" aria-label="Elige una oración para jugar"></div>
+          <div class="start-actions">
+            <button id="startRewaBtn" class="primary-btn" type="button" disabled>Jugar con REWA →</button>
+            <button id="startCameraBtn" class="primary-btn" type="button">Jugar con la cámara →</button>
+            <button id="startPointerBtn" class="secondary-btn" type="button">Probar con mouse o táctil</button>
+          </div>
+          <p class="privacy-note">La cámara se usa solo para detectar la mano en este dispositivo. En un computador o tablet de bajos recursos, el modo táctil puede resultar más fluido.</p>
+        </section>
+      </section>
+
+      <section id="boardView" class="board-view art-stage hidden" aria-labelledby="boardTitle">
+        <h1 id="boardTitle" class="sr-only">Construye la oración</h1>
+        <div class="mission-tools">
+          <button id="backToSetupBtn" class="secondary-btn compact" type="button">← Menú</button>
+          <button id="sentenceMuteBtn" class="secondary-btn compact" type="button" aria-pressed="false">🔊 Sonido</button>
+          <button id="fullscreenBtn" class="secondary-btn compact" type="button" aria-label="Pantalla completa">⛶</button>
+        </div>
+        <header class="sentence-timing" aria-label="Panel de misión">
+          <h2> MISIÓN <span id="roundLabel">01</span> · CONSTRUYE LA ORACIÓN</h2>
+          <div class="timing-instruments">
+            <span class="timing-main"><small>TIEMPO</small><strong id="sentenceTime">00:00</strong></span>
+            <span><small>COMPLETADAS</small><strong id="sentenceSolved">0</strong></span>
+            <span><small>TOTAL</small><strong id="sentenceTotal">00:00</strong></span>
+          </div>
+          <span id="sentenceClockState" class="clock-state"></span>
+        </header>
+        <div id="eclipseCountdown" class="eclipse-countdown" role="timer" aria-label="Eclipse llega en 15 segundos" title="Eclipse llega en 15 segundos">
+          <svg viewBox="0 0 64 64" aria-hidden="true"><circle class="countdown-track" cx="32" cy="32" r="27"/><circle id="eclipseRing" class="countdown-progress" cx="32" cy="32" r="27" pathLength="100"/></svg>
+          <span id="eclipseSeconds">15</span>
+        </div>
+        <div id="eclipseWarning" class="sr-only" role="status" hidden></div>
+        <div id="sentenceEnemy" class="sentence-enemy" aria-hidden="true" hidden><img src="./art/oraciones/eclipse-jetpack-v2.webp" alt=""><span id="enemyWord" class="enemy-word" hidden></span></div>
+        <div id="contextCard" class="context-card"><p id="activeContext"></p></div>
+        <strong id="placedCount" class="mission-score" aria-label="Palabras colocadas">0 / 0</strong>
+        <p id="gestureHint" class="sr-only">Apunta a una palabra y cierra el puño para tomarla.</p>
+        <div id="playSurface" class="play-surface">
+          <div id="slotArea" class="slot-area" aria-label="Espacios de la oración"></div>
+          <div id="wordTray" class="word-tray" aria-label="Palabras disponibles"></div>
+          <div id="boardGestureActions" class="gesture-actions hidden">
+            <p>Mantén la mano abierta sobre un botón durante 5 segundos</p>
+            <div>
+              <button type="button" data-dwell-for="checkBtn">Comprobar</button>
+              <button type="button" data-dwell-for="retryBtn">Reintentar</button>
+            </div>
+          </div>
+          <div id="handCursor" class="hand-cursor hidden" aria-hidden="true"><span>●</span></div>
+          <div id="dragGhost" class="drag-ghost hidden" aria-hidden="true"></div>
+        </div>
+        <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+        <button id="checkBtn" class="art-button" type="button">Comprobar</button>
+        <button id="retryBtn" class="art-button" type="button">Reintentar</button>
+        <div id="cameraPreview" class="camera-preview hidden" aria-label="Vista previa de la cámara">
+          <video id="webcamVideo" autoplay playsinline muted></video>
+          <canvas id="webcamOverlay" width="480" height="360"></canvas>
+        </div>
+      </section>
+      <section id="victoryView" class="victory-view art-stage hidden" aria-labelledby="victoryTitle">
+        <h1 id="victoryTitle" class="sr-only">¡Misión completada!</h1>
+        <div class="sentence-results"><strong id="sentenceResult"></strong><span id="sentenceSessionResult"></span><details><summary>Ver tiempos por oración</summary><ol id="sentenceTimeList"></ol></details></div>
+        <div id="victorySentence" class="victory-sentence" aria-label="Oración completada"></div>
+        <div id="victoryAim" class="victory-aim">
+          <div class="gesture-actions">
+            <p>Mantén la mano abierta sobre un botón durante 5 segundos</p>
+            <div>
+              <button type="button" data-dwell-for="victoryNextBtn">Siguiente misión</button>
+              <button type="button" data-dwell-for="victoryReplayBtn">Volver a jugar</button>
+            </div>
+          </div>
+        </div>
+        <button id="victoryNextBtn" class="art-button" type="button">Siguiente misión</button>
+        <button id="victoryReplayBtn" class="art-button" type="button">Volver a jugar</button>
+        <button id="victoryMenuBtn" class="secondary-btn compact" type="button">← Menú</button>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="./oraciones.js?v=rewa1"></script>
+</body>
+</html>

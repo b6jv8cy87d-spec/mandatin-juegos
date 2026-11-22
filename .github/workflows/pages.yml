@@ -28,6 +28,7 @@ jobs:
       - name: Preparar los tres juegos
         run: |
           unzip -q Mandatin-Juegos-GitHub.zip -d site
+          cp rewa-overlay/* site/
           test -s site/index.html
           test -s site/game.html
           test -s site/oraciones.html
